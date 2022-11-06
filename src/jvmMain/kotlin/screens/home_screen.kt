@@ -2,6 +2,7 @@ package screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,33 +43,33 @@ fun HomeScreen(){
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = animatedPadding.dp)
             )
-            /*
-            Text(
-                text = "Wordmes",
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 48.sp,
-                fontFamily = montserrat,
-                modifier = Modifier.padding(top = animatedPadding.dp),
-                color = theme.TextColor
-            )
-            */
         }
         Spacer(modifier = Modifier.height(40.dp))
-        WText(
-            text = "use full-screen mode for better experience",
-            size = 16.sp,
-            fontWeight = FontWeight.Light,
-            modifier = Modifier.align(alignment = Alignment.BottomCenter).padding(bottom = 16.dp),
-        )
-        /*
-        Text(
-            text = "use full-screen mode for better experience",
-            fontWeight = FontWeight.Light,
-            fontSize = 16.sp,
-            fontFamily = montserrat,
-            modifier = Modifier.align(alignment = Alignment.BottomCenter).padding(bottom = 16.dp),
-            color = theme.TextColor
-        )
-        */
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            WText(
+                text = "use full-screen mode for better experience",
+                size = 16.sp,
+                fontWeight = FontWeight.Light
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            WText(
+                text = "Images by FlatIcon",
+                size = 14.sp,
+                fontWeight = FontWeight.Normal
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            SelectionContainer {
+                WText(
+                    text = "https://www.flaticon.com",
+                    size = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+        }
     }
 }

@@ -10,30 +10,26 @@ import androidx.compose.ui.graphics.vector.ImageVector
  */
 enum class Screen(
     val label: String,
-    val icon: ImageVector,
+    val path: String,
 ) {
     HomeScreen(
         label = "Home",
-        icon = Icons.TwoTone.Home
+        path = "images/screen_icons/home_icon.png"
     ),
     TutorialScreen(
-        label = "Tutorial",
-        icon = Icons.TwoTone.Info
+        label = "Help",
+        path = "images/screen_icons/information_icon.png"
     ),
     WordleScreen(
         label = "Wordge",
-        icon = Icons.TwoTone.List
+        path = "images/screen_icons/wordle_icon.png"
     ),
     SharkmanScreen(
         label = "Sharkman",
-        icon = Icons.TwoTone.Face
+        path = "images/screen_icons/sharkman_icon.png"
     ),
     WordsFromWordScreen(
         label = "WFW",
-        icon = Icons.TwoTone.AddCircle
-    ),
-    CreatorsScreen(
-        label = "Creators",
-        icon = Icons.TwoTone.Person
+        path = "images/screen_icons/words_from_word_icon.png"
     )
 }

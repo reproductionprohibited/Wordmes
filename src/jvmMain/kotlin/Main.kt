@@ -1,4 +1,5 @@
 // Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,9 +49,6 @@ fun CustomNavigationHost(
         composable(Screen.TutorialScreen.name) {
             TutorialScreen(navController = navController)
         }
-        composable(Screen.CreatorsScreen.name) {
-            CreatorsScreen()
-        }
     }.build()
 }
 
@@ -85,9 +83,10 @@ fun App() {
                         NavigationRailItem(
                             selected = currentScreen == screen.name,
                             icon = {
-                                Icon(
-                                    imageVector = screen.icon,
-                                    contentDescription = screen.label
+                                Image(
+                                    painter = painterResource(resourcePath = screen.path),
+                                    contentDescription = screen.label,
+                                    modifier = Modifier.size(24.dp)
                                 )
                             },
                             label = {
