@@ -1,6 +1,6 @@
 import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 
 plugins {
     kotlin("multiplatform")
@@ -15,7 +15,6 @@ repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
-
 
 kotlin {
     jvm {
@@ -37,12 +36,21 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "MainKt"
+        javaHome = System.getenv("JDK_15")
         nativeDistributions {
+            windows {
+                iconFile.set(project.file("icon.ico"))
+            }
+
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+
             packageName = "Wordmes"
             packageVersion = "1.0.0"
+
+            includeAllModules = true
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+            outputBaseDir.set(project.buildDir.resolve("prep_for_release_directory_1"))
         }
     }
 }
-
 

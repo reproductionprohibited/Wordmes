@@ -23,14 +23,22 @@ import fragments.WText
 import theme
 
 
+/**
+ * mini-games categories
+ */
 private val categories = listOf(
     "wordge",
     "sharkman",
-    "wfw",
-    "about"
+    "w -> w",
+    "bulls & cows",
+    "about",
 )
 
 
+/**
+ * Text that follows the main text of the category.
+ *      text: content text
+ */
 @Composable
 private fun AfterInfoSign(
     modifier: Modifier = Modifier,
@@ -53,8 +61,9 @@ private fun AfterInfoSign(
     InformationSpacer()
 }
 
+
 /**
- * Information about wordge composable
+ * Information about Wordle mini-game. Contains a navigation Button to navigate the user directly into the game
  */
 @Composable
 private fun InformationWordle(
@@ -72,9 +81,7 @@ private fun InformationWordle(
                 Then, an input window appears and you start guessing. As long as your input string length is equal to
                 the length you've just picked, the program shows you whether the letter is perfectly fit ( green ), 
                 the letter is in the word, but the position is wrong ( yellow )
-                or is absent in this specific word ( gray ). 
-                You can always see your top-5 best guesses ( the closest ones ) if you're confused, just click the 
-                button on the bottom of the screen!
+                or is absent in this specific word ( gray ).
             """.trimIndent(),
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
@@ -94,7 +101,7 @@ private fun InformationWordle(
 
 
 /**
- * Information about hangman composable
+ * Information about Sharkman mini-game. Contains a navigation Button to navigate the user directly into the game
  */
 @Composable
 private fun InformationSharkman(
@@ -109,9 +116,8 @@ private fun InformationSharkman(
         Text(
             text = """
                 In this game, at first, a random word with length from 5 to 12 inclusive is guessed by the computer.
-                Your goal is to keep the cake from being overcooked. You can do it by guessing letters from the guessed
-                word. If you got the wrong letter for 7 times, the cake gets overcooked and there's no way to turn that 
-                back. So, you better do your best not to make the Birthday messed up!
+                Your goal is to keep the man from being eaten by a hungry shark. You have 8 tries until the shark 
+                reaches the guy and eats him immediately.
             """.trimIndent(),
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
@@ -120,7 +126,7 @@ private fun InformationSharkman(
             color = theme.TextColor
         )
         AfterInfoSign(
-            text = "Have fun playing!"
+            text = "Make sure to help the guy!"
         )
         NavigateToGameButton(
             navController = navController,
@@ -131,7 +137,7 @@ private fun InformationSharkman(
 
 
 /**
- * Information about wfw composable
+ * Information about Words from a Word mini-game. Contains a navigation Button to navigate the user directly into the game
  */
 @Composable
 private fun InformationWordsFromWord(
@@ -146,10 +152,9 @@ private fun InformationWordsFromWord(
         Text(
             text = """
                 In this game, a specific word is being guessed. Your goal is to assemble new words, that contain ONLY 
-                the letters present in the starting word ( mind the amount of letters ). Once you've assembled the 
-                necessary amount of words, a level is considered as passed. There're 3 modes: Easy - you have to assemble
-                5 words and you don't lose points for entering wrong words; Normal - 7 words and 1 loss point;
-                Hard - 10 words and 2 loss points. Time for a challenge!
+                the letters present in the starting word ( mind the amount of letters ). If you have assembled 5 words,
+                you got 1 star, 12 words = 2 stars and, finally, 25 words = 3 stars. If you got that same amount of words,
+                you may never come back to this word, but there's no limit, you can keep going.
             """.trimIndent(),
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
@@ -169,10 +174,48 @@ private fun InformationWordsFromWord(
 
 
 /**
+ * Information about Bulls & Cows mini-game. Contains a navigation Button to navigate the user directly into the game
+ */
+@Composable
+private fun InformationBullsAndCows(
+    navController: NavController
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 120.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        InformationSpacer(height = 32)
+        Text(
+            text = """
+                In this game, a specific (4 / 6)-digit number is being guessed. Your goal is to guess his number.
+                Each step of yours must contain a (4 / 6)-digit number ( depends on which mode you've chosen ).
+                After each step you receive information about current step: the amount of bulls and the amount of cows.
+                Bulls are digits that are on their positions in the guessed number. Cows are digits that are present
+                in the guessed number, but they're not in the position you got them in the guess.
+            """.trimIndent(),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+            fontFamily = montserrat,
+            textAlign = TextAlign.Center,
+            color = theme.TextColor
+        )
+        AfterInfoSign(
+            text = "Have fun playing!"
+        )
+        NavigateToGameButton(
+            navController = navController,
+            route = Screen.BullsAndCowsNumbers.name
+        )
+    }
+}
+
+
+/**
  * Information about the app
  */
 @Composable
-private fun InformationAbout(){
+private fun InformationAbout() {
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 120.dp),
         verticalArrangement = Arrangement.Top,
@@ -206,6 +249,9 @@ private fun InformationAbout(){
 
 /**
  * Select topic/category button
+ *      onClick: handling onClick action
+ *      isEnabled: button is pressed [ false ] and showing the corresponding information; [ true ] - otherwise
+ *      category: button content text
  */
 @Composable
 private fun SelectCategoryButton(
@@ -232,6 +278,12 @@ private fun SelectCategoryButton(
 }
 
 
+/**
+ * NavigateToGameButton - Button that navigates the user to a specific screen ( route ) from the Help Screen
+ * ( TutorialScreen )
+ *      navController: NavController that navigates the user around the app
+ *      route: Destination Screen
+ */
 @Composable
 private fun NavigateToGameButton(
     navController: NavController,
@@ -255,27 +307,25 @@ private fun NavigateToGameButton(
     }
 }
 
+
 /**
- * Screen to show information about different mini-games
+ * Screen to help a new user get around the app.
+ *      navController: handles navigation inside the app
  */
 @Composable
 fun TutorialScreen(
     navController: NavController
 ) {
-    var isSelectedWordle by remember {
-        mutableStateOf(false)
-    }
-
-    var isSelectedSharkman by remember {
-        mutableStateOf(false)
-    }
-
-    var isSelectedWordsFromWord by remember {
-        mutableStateOf(false)
-    }
-
-    var isSelectedAbout by remember {
-        mutableStateOf(false)
+    /*
+        === LIST OF CATEGORIES ===
+        1 : wordle
+        2 : sharkman
+        3 : words from word
+        4 : bulls & cows
+        5 : about
+     */
+    var selectedCategory: Int by remember {
+        mutableStateOf(0)
     }
 
     Column(
@@ -283,8 +333,8 @@ fun TutorialScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WText(
-            text = "How to play?",
-            size = 24.sp,
+            text = "Help",
+            size = 32.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(top = 8.dp)
         )
@@ -294,77 +344,81 @@ fun TutorialScreen(
             horizontalArrangement = Arrangement.Center,
         ) {
             categories.forEachIndexed { i, _ ->
-                when(i) {
+                when (i) {
                     0 -> {
-                        /*
-                         * select wordle button
-                         */
+                        // select `wordle` button
                         SelectCategoryButton(
                             onClick = {
-                                isSelectedWordle = true; isSelectedSharkman = false
-                                isSelectedWordsFromWord = false; isSelectedAbout = false
+                                selectedCategory = 1
                             },
-                            isEnabled = !isSelectedWordle,
+                            isEnabled = selectedCategory != 1,
                             category = categories[0]
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                     }
                     1 -> {
-                        /*
-                         * select Sharkman button
-                         */
+                        // select `sharkman` button
                         SelectCategoryButton(
                             onClick = {
-                                isSelectedWordle = false; isSelectedSharkman = true
-                                isSelectedWordsFromWord = false; isSelectedAbout = false
+                                selectedCategory = 2
                             },
-                            isEnabled = !isSelectedSharkman,
+                            isEnabled = selectedCategory != 2,
                             category = categories[1]
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                     }
                     2 -> {
-                        /*
-                         * select words from word button
-                         */
+                        // select `words from word` button
                         SelectCategoryButton(
                             onClick = {
-                                isSelectedWordle = false; isSelectedSharkman = false
-                                isSelectedWordsFromWord = true; isSelectedAbout = false
+                                selectedCategory = 3
                             },
-                            isEnabled = !isSelectedWordsFromWord,
+                            isEnabled = selectedCategory != 3,
                             category = categories[2]
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                     }
                     3 -> {
-                        /*
-                         * select about button
-                         */
+                        // select `Bulls & Cows` button
                         SelectCategoryButton(
                             onClick = {
-                                isSelectedWordle = false; isSelectedSharkman = false
-                                isSelectedWordsFromWord = false; isSelectedAbout = true
+                                selectedCategory = 4
                             },
-                            isEnabled = !isSelectedAbout,
+                            isEnabled = selectedCategory != 4,
                             category = categories[3]
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                    }
+                    4 -> {
+                        // select `About` button
+                        SelectCategoryButton(
+                            onClick = {
+                                selectedCategory = 5
+                            },
+                            isEnabled = selectedCategory != 5,
+                            category = categories[4]
                         )
                     }
                 }
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
-        if(isSelectedWordle) {
-            InformationWordle(navController = navController)
-        }
-        else if (isSelectedSharkman) {
-            InformationSharkman(navController = navController)
-        }
-        else if (isSelectedWordsFromWord) {
-            InformationWordsFromWord(navController = navController)
-        }
-        else if (isSelectedAbout) {
-            InformationAbout()
+        when (selectedCategory) {
+            1 -> {
+                InformationWordle(navController = navController)
+            }
+            2 -> {
+                InformationSharkman(navController = navController)
+            }
+            3 -> {
+                InformationWordsFromWord(navController = navController)
+            }
+            4 -> {
+                InformationBullsAndCows(navController = navController)
+            }
+            5 -> {
+                InformationAbout()
+            }
         }
     }
 }

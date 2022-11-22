@@ -27,7 +27,8 @@ import kotlinx.coroutines.*
 
 
 /**
- * Box to show specific letter ( used in Hangman overall Player progress )
+ * Box to display each letter status ( guessed | not guessed )
+ *      letter: the char to be displayed
  */
 @Composable
 private fun LetterBox(
@@ -39,7 +40,7 @@ private fun LetterBox(
     ) {
         Text(
             text = letter.toString(),
-            fontSize = (if(letter == '_') 40 else 18).sp,
+            fontSize = (if (letter == '_') 40 else 18).sp,
             fontWeight = FontWeight.Medium,
             fontFamily = montserrat,
             color = theme.TextColor
@@ -47,6 +48,13 @@ private fun LetterBox(
     }
 }
 
+/**
+ * Displays an image
+ *      path: image path
+ *      contentDescription: contentDescription used for testing purposes
+ *      imgWidth: width of the image ( in Dp )
+ *      imgHeight: height of the image ( in Dp )
+ */
 @Composable
 private fun SharkmanImage(
     path: String,
@@ -63,7 +71,8 @@ private fun SharkmanImage(
 }
 
 /**
- * Function which manages the in-game progress
+ * SharkmanGame - handles the gameplay
+ *      word: guessed word
  */
 @Composable
 private fun SharkmanGame(
@@ -211,12 +220,11 @@ private fun SharkmanGame(
 
 
 /**
- * Screen with the game of Hangman.
- * Keeps values of wordLength and word itself
+ * Sharkman Screen. Screen that the user is navigated to by the NavHost
  */
 @Composable
 fun SharkmanScreen(){
-    // length = [5, 12]
+    // ===  length = [5, 12] ===
     var word: String? by remember {
         mutableStateOf("")
     }
@@ -234,7 +242,7 @@ fun SharkmanScreen(){
     ) {
         Text(
             text = "Sh_rkm_n",
-            fontSize = 24.sp,
+            fontSize = 32.sp,
             fontWeight = FontWeight.Medium,
             fontFamily = montserrat,
             modifier = Modifier.padding(top = 8.dp),
@@ -263,7 +271,7 @@ fun SharkmanScreen(){
                     modifier = Modifier.width(120.dp).height(50.dp)
                 ) {
                     Text(
-                        text = "Start!",
+                        text = "start",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         fontFamily = montserrat,

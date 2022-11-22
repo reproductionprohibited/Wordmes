@@ -13,23 +13,27 @@ enum class Screen(
     val path: String,
 ) {
     HomeScreen(
-        label = "Home",
+        label = "home",
         path = "images/screen_icons/home_icon.png"
     ),
     TutorialScreen(
-        label = "Help",
+        label = "help",
         path = "images/screen_icons/information_icon.png"
     ),
     WordleScreen(
-        label = "Wordge",
+        label = "wordle",
         path = "images/screen_icons/wordle_icon.png"
     ),
     SharkmanScreen(
-        label = "Sharkman",
+        label = "sharkman",
         path = "images/screen_icons/sharkman_icon.png"
     ),
     WordsFromWordScreen(
-        label = "WFW",
+        label = "W -> w",
         path = "images/screen_icons/words_from_word_icon.png"
+    ),
+    BullsAndCowsNumbers(
+        label = "numbers",
+        path = "images/screen_icons/bulls_and_cows_num_icon.png"
     )
 }

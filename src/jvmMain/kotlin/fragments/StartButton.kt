@@ -21,32 +21,29 @@ import theme
 
 @Composable
 fun StartButton(
-    onClick: () -> Unit
+    text: String = "start",
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    OutlinedButton(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = theme.ButtonBackgroundColor,
+            contentColor = theme.ButtonContentColor
+        ),
+        border = BorderStroke(
+            width=1.dp,
+            color = theme.ButtonBorderColor
+        ),
+        modifier = modifier.width(120.dp).height(50.dp)
     ) {
-        OutlinedButton(
-            onClick = onClick,
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = theme.ButtonBackgroundColor,
-                contentColor = theme.ButtonContentColor
-            ),
-            border = BorderStroke(
-                width=1.dp,
-                color = theme.ButtonBorderColor
-            ),
-            modifier = Modifier.width(120.dp).height(50.dp)
-        ) {
-            Text(
-                text = "Start!",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = montserrat,
-                textAlign = TextAlign.Center,
-                color = theme.TextColor
-            )
-        }
+        Text(
+            text = text,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = montserrat,
+            textAlign = TextAlign.Center,
+            color = theme.TextColor
+        )
     }
 }

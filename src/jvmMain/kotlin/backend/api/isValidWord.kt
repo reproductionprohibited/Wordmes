@@ -9,8 +9,8 @@ import java.net.http.HttpResponse
 
 /**
  * List of booleans:
- * 1st place: If there's no Exception,
- * 2nd place: If the word exists
+ *      0 index: true = No Exception, false = Internet Exception,
+ *      1 index: true = Word Exists, false = Word does not exist
  */
 fun isValidWord(word: String): List<Boolean> {
     try {
@@ -20,9 +20,10 @@ fun isValidWord(word: String): List<Boolean> {
             .build()
         val response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
         val body = response.body()!!
+        println("$word : $body")
         return listOf(
             false,
-            body.contains("audio") && body.contains("phonetics") && body.contains("definition"),
+            !body.contains("\"message\":\"Sorry pal, we couldn't find definitions for the word you were looking for.\"")
         )
     } catch (e: ConnectException) {
         return listOf(true, false)

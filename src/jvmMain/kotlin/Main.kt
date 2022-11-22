@@ -22,7 +22,7 @@ import navigation.NavHost
 import navigation.composable
 import navigation.rememberNavController
 
-import screens.WordgeScreen
+import screens.WordleScreen
 import screens.*
 import fonts.montserrat
 import theming.Theme
@@ -38,7 +38,7 @@ fun CustomNavigationHost(
             HomeScreen()
         }
         composable(Screen.WordleScreen.name) {
-            WordgeScreen()
+            WordleScreen()
         }
         composable(Screen.SharkmanScreen.name) {
             SharkmanScreen()
@@ -49,6 +49,9 @@ fun CustomNavigationHost(
         composable(Screen.TutorialScreen.name) {
             TutorialScreen(navController = navController)
         }
+        composable(Screen.BullsAndCowsNumbers.name) {
+            BullsAndCowsNumberScreen()
+        }
     }.build()
 }
 
@@ -57,6 +60,7 @@ fun CustomNavigationHost(
  */
 @Composable
 fun App() {
+
     val screens = Screen.values()
     val navController by rememberNavController(Screen.HomeScreen.name)
     val currentScreen by remember {
@@ -86,7 +90,7 @@ fun App() {
                                 Image(
                                     painter = painterResource(resourcePath = screen.path),
                                     contentDescription = screen.label,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(28.dp)
                                 )
                             },
                             label = {

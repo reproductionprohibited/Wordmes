@@ -1,30 +1,35 @@
 package screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backend.api.isValidWord
 import fonts.montserrat
 import fragments.NoInternetConnectionSign
-import fragments.StartButton
 import fragments.WText
-import kotlinx.coroutines.runBlocking
+import fragments.WTextField
 import theme
-import kotlin.random.Random
 
 
-// 100 words
+/**
+ * 100 words used as levels
+ */
 private val words = listOf(
     "anthropomorphic",
     "simplification",
@@ -97,7 +102,7 @@ private val words = listOf(
     "sanctification",
     "paraphernalia",
     "assassination",
-    "Mediterranean",
+    "mediterranean",
     "superintendent",
     "daguerreotype",
     "scintillation",
@@ -128,287 +133,351 @@ private val words = listOf(
     "coincidental",
 )
 
+/**
+ * Generates a char map from a string, containing pairs (letter, count).
+ * Used when checking player guess based on the word at a certain level
+ */
+private fun charMapFromString(
+    string: String
+): Map<Char, Int> {
+    val mp: MutableMap<Char, Int> = mutableMapOf()
+    string.forEach { mp[it] = (mp[it] ?: 0) + 1 }
+    return mp
+}
 
-private fun isValidLetterCount(
+/**
+ * Check whether the player guess can be assembled with the letters of the player guess
+ */
+private fun isGuessValidLetterCount(
     guess: String,
-    goal: String
+    answerMap: Map<Char, Int>,
 ): Boolean {
-    val guessLettersMap: MutableMap<Char, Int> = mutableMapOf()
-    val goalLettersMap: MutableMap<Char, Int> = mutableMapOf()
-
-    guess.forEach { guessLettersMap[it] = (guessLettersMap[it] ?: 0) + 1 }
-    goal.forEach { goalLettersMap[it] = (goalLettersMap[it] ?: 0) + 1 }
-
-    for(entry in guessLettersMap) {
-        val letter: Char = entry.key
-        val count: Int = entry.value
-        if ( (goalLettersMap[letter] == null) || (goalLettersMap[letter]!! < count) ) return false
+    val guessMap: MutableMap<Char, Int> = mutableMapOf()
+    guess.forEach { guessMap[it] = (guessMap[it] ?: 0) + 1 }
+    guessMap.forEach { (key, value) ->
+        if (value > (answerMap[key] ?: -1)) { return false }
     }
     return true
 }
 
 
+/**
+ * Arrow-like icon buttons handling level choosing process
+ */
 @Composable
-private fun ChooseDifficultyButton(
+private fun ChooseLevelIconButton(
     onClick: () -> Unit,
-    mode: String
+    resourcePath: String,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+    angle: Float
+) {
+    IconButton(onClick = onClick) {
+        Icon(
+            painter = painterResource(resourcePath = resourcePath),
+            contentDescription = contentDescription,
+            modifier = modifier.size(32.dp).rotate(angle)
+        )
+    }
+}
+
+/**
+ * Custom button with the theme colors out of the box
+ */
+@Composable
+private fun WButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    isEnabled: Boolean = true,
+    text: String
 ) {
     OutlinedButton(
+        modifier = modifier,
         onClick = onClick,
+        enabled = isEnabled,
         colors = ButtonDefaults.buttonColors(
             backgroundColor = theme.ButtonBackgroundColor,
             contentColor = theme.ButtonContentColor
         ),
         border = BorderStroke(
-            width=1.dp,
+            width = 1.dp,
             color = theme.ButtonBorderColor
-        ),
-        modifier = Modifier.width(120.dp).height(50.dp)
+        )
     ) {
         Text(
-            text = mode,
-            fontSize = 18.sp,
+            text = text,
+            textAlign = TextAlign.Center,
             fontWeight = FontWeight.Medium,
             fontFamily = montserrat,
-            textAlign = TextAlign.Center,
             color = theme.TextColor
         )
     }
 }
 
+
+/**
+ * Display how many stars does a player have on each level
+ */
+@Suppress("SameParameterValue")
 @Composable
-private fun WordsFromWord(
-    mainWord: String,
-    necessaryWordCount: Int = 5,
-    mistakeWordCount: Int = 0
+private fun StarRow(
+    filledStars: Int,
+    modifier: Modifier = Modifier,
+    verticalAlignment: Alignment.Vertical
 ) {
-    var inputWord: String by remember {
+    var filledStarsCount: Int by remember {
+        mutableStateOf(filledStars % 4)
+    }
+
+    Row(
+        verticalAlignment = verticalAlignment,
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier
+    ) {
+        for(i in 0 .. 2) {
+            if (filledStarsCount > 0) {
+                Image(
+                    painter = painterResource(resourcePath = "images/words_from_words/star_fill.png"),
+                    contentDescription = "star_fill",
+                    modifier = Modifier.size(32.dp)
+                )
+                filledStarsCount--
+            } else {
+                Image(
+                    painter = painterResource(resourcePath = "images/words_from_words/star_blank.png"),
+                    contentDescription = "star_blank",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+            if (i != 2) { Spacer(modifier = Modifier.width(18.dp)) }
+        }
+    }
+}
+
+/**
+ * Display the player guesses
+ */
+@Composable
+private fun GuessColumn(
+    title: String,
+    guessList: List<String>,
+    color: Color
+) {
+    WText(
+        text = guessList.takeLast(7).joinToString(separator = "\n", prefix = "$title\n${guessList.size}\n"),
+        color = color,
+        size = 18.sp,
+        fontWeight = FontWeight.Light,
+        modifier = Modifier.height(240.dp)
+    )
+}
+
+
+/**
+ * The code of game process of Words from Words
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun WordsFromWordGame(
+    levelWord: String
+) {
+    var playerGuess: String by remember {
         mutableStateOf("")
     }
 
-    var successfulGuessCount: Int by remember {
-        mutableStateOf(0)
+    val successfulGuessList: MutableList<String> by remember {
+        mutableStateOf(mutableListOf())
+    }
+
+    val unsuccessfulGuessList: MutableList<String> by remember {
+        mutableStateOf(mutableListOf())
     }
 
     var hasNoInternetConnection: Boolean by remember {
         mutableStateOf(false)
     }
 
-    var isWordValid : Boolean by remember {
+    var isPlayerGuessValid: Boolean by remember {
         mutableStateOf(false)
     }
 
-    var isInputEnabled: Boolean by remember {
-        mutableStateOf(true)
+    val levelWordMap: Map<Char, Int> by remember {
+        mutableStateOf(charMapFromString(string = levelWord))
     }
 
-    var list: MutableList<Boolean> by remember {
-        mutableStateOf(mutableListOf())
-    }
-
-    val guessedWords : MutableList<String> by remember {
-        mutableStateOf(
-            mutableListOf()
-        )
-    }
-
-    val mistakeWords: MutableList<String> by remember {
-        mutableStateOf(
-            mutableListOf()
-        )
-    }
-
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        if(isInputEnabled && !hasNoInternetConnection) {
-            OutlinedTextField(
-                value = inputWord,
-                onValueChange = { input ->
-                    inputWord = input.filter { it.isLetter() }.lowercase()
-                },
-                modifier = Modifier.width(360.dp),
-                label = {
-                    Text(
-                        text = "guess",
-                        fontFamily = montserrat
-                    )
-                },
-                enabled = isInputEnabled,
-                textStyle = TextStyle.Default.copy(fontFamily = montserrat),
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = theme.TextColor,
-                    backgroundColor = theme.TextFieldColor,
-                    focusedIndicatorColor = theme.TextFieldColor,
-                    focusedLabelColor = theme.TextColor
-                )
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedButton(
-                onClick = {
-                    runBlocking {
-                        list = isValidWord(word = inputWord).toMutableList()
-                    }
-                    hasNoInternetConnection = list[0]; isWordValid = list[1]
-                    println("[$hasNoInternetConnection, $isWordValid]")
-                    if (
-                        inputWord.length > 1 &&
-                        inputWord !in guessedWords &&
-                        isValidLetterCount(guess = inputWord, goal = mainWord) &&
-                        !hasNoInternetConnection &&
-                        isWordValid
-                    ) {
-                        successfulGuessCount++
-                        guessedWords.add(inputWord)
-                        println(
-                            guessedWords.joinToString(separator = ", ", prefix = "GUESSED WORDS: ", postfix = ".")
-                        )
-                        println("$inputWord is valid")
-                        if (successfulGuessCount == necessaryWordCount) isInputEnabled = false
-                    } else if (
-                        inputWord.length > 1 &&
-                        inputWord !in guessedWords &&
-                        isValidLetterCount(guess = inputWord, goal = mainWord) &&
-                        !hasNoInternetConnection &&
-                        !isWordValid &&
-                        successfulGuessCount > 0
-                    ) {
-                        successfulGuessCount -= mistakeWordCount
-                        mistakeWords.add(inputWord)
-                        println(
-                            mistakeWords.joinToString(separator = ", ", prefix = "MISTAKE WORDS: ", postfix = ".")
-                        )
-                        println("$inputWord is INVALID")
-                    }
-                    inputWord = ""
-                },
-                enabled = isInputEnabled,
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = theme.ButtonBackgroundColor,
-                    contentColor = theme.ButtonContentColor
-                ),
-                border = BorderStroke(
-                    width=1.dp,
-                    color = theme.ButtonBorderColor
-                )
-            ) {
-                Text(
-                    text = "enter",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Light,
-                    fontFamily = montserrat
-                )
-            }
-        } else if (!isInputEnabled && !hasNoInternetConnection) {
-            Text(
-                text = "Congratulations. You win!",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = montserrat,
-                color = theme.TextColor
-            )
-        } else if (hasNoInternetConnection) { NoInternetConnectionSign() }
-        if (!hasNoInternetConnection) {
-            Spacer(modifier = Modifier.height(32.dp))
-            Divider(modifier = Modifier.height(2.dp).width(400.dp), color = Color.DarkGray)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Progress: $successfulGuessCount/$necessaryWordCount guessed\n\n\n" +
-                        if (guessedWords.size > 0) "Lucky Guesses: ${guessedWords.joinToString(separator = ", ")}"
-                        else "",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = montserrat,
-                textAlign = TextAlign.Center,
-                color = theme.CorrectTextColor
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = if (mistakeWords.size > 0) "Mistaken Guesses: ${mistakeWords.joinToString(separator = ", ")}"
-                else "",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = montserrat,
-                textAlign = TextAlign.Center,
-                color = theme.WrongTextColor
-            )
-        }
-    }
-}
-
-
-@Composable
-fun WordsFromWordScreen(){
-    var pickedWordCount: Int by remember {
+    var starCount: Int by remember {
         mutableStateOf(0)
-    }
-
-    var mistakeWordCount: Int by remember {
-        mutableStateOf(0)
-    }
-
-    var hasStarted: Boolean by remember {
-        mutableStateOf(false)
-    }
-
-    var mainWord: String by remember {
-        mutableStateOf("")
     }
 
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        WText(
-            text = "Words from Word",
-            size = 24.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-        if(!hasStarted) {
-            Row (
-                modifier = Modifier.fillMaxSize().padding(horizontal = 180.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+        if (!hasNoInternetConnection) {
+            WText(
+                text = levelWord,
+                size = 24.sp,
+                fontWeight = FontWeight.Normal
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Divider(modifier = Modifier.height(1.dp).width(240.dp), color = theme.ButtonBorderColor)
+            Spacer(modifier = Modifier.height(8.dp))
+            WTextField(
+                value = playerGuess,
+                onValueChange = { input ->
+                    playerGuess = input.take(levelWord.length).lowercase()
+                },
+                alpha = 0.6f,
+                singleLine = true,
+                modifier = Modifier.onKeyEvent { event ->
+                    if ((event.key == Key.Enter || event.key == Key.NumPadEnter) && playerGuess.length > 1) {
+                        val ivwBoolList: List<Boolean> = isValidWord(word = playerGuess)
+                        hasNoInternetConnection = ivwBoolList[0]
+                        isPlayerGuessValid = ivwBoolList[1]
+                        if (isGuessValidLetterCount(
+                                guess = playerGuess,
+                                answerMap = levelWordMap
+                            ) && isPlayerGuessValid) {
+                            if (playerGuess !in successfulGuessList) { successfulGuessList.add(playerGuess)}
+                            if (successfulGuessList.size >= 5) starCount = 1
+                            if (successfulGuessList.size >= 12) starCount = 2
+                            if (successfulGuessList.size >= 25) starCount = 3
+                            println(starCount)
+                        } else {
+                            if (playerGuess !in unsuccessfulGuessList) { unsuccessfulGuessList.add(playerGuess)}
+                        }
+                        playerGuess = ""
+                    }
+                    true
+                }
+            )
+            Spacer(modifier = Modifier.height(48.dp))
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                ChooseDifficultyButton ( onClick = {
-                    hasStarted = true
-                    mainWord = words[Random.nextInt(0, 101)]
-                    pickedWordCount = 5
-                    mistakeWordCount = 0
-                }, mode = "Easy" )
+                GuessColumn(
+                    title = "Successful Guesses:",
+                    guessList = successfulGuessList,
+                    color = theme.CorrectTextColor
+                )
                 Spacer(modifier = Modifier.width(24.dp))
-                ChooseDifficultyButton ( onClick = {
-                    hasStarted = true
-                    mainWord = words[Random.nextInt(0, 101)]
-                    pickedWordCount = 7
-                    mistakeWordCount = 1
-                }, mode = "Normal" )
-                Spacer(modifier = Modifier.width(24.dp))
-                ChooseDifficultyButton ( onClick = {
-                    hasStarted = true
-                    mainWord = words[Random.nextInt(0, 101)]
-                    pickedWordCount = 10
-                    mistakeWordCount = 2
-                }, mode = "Hard" )
+                GuessColumn(
+                    title = "Unsuccessful Guesses:",
+                    guessList = unsuccessfulGuessList,
+                    color = theme.WrongTextColor
+                )
+            }
+            when(starCount) {
+                0 -> {
+                    StarRow(
+                        filledStars = 0,
+                        verticalAlignment = Alignment.Bottom,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+                1 -> {
+                    StarRow(
+                        filledStars = 1,
+                        verticalAlignment = Alignment.Bottom,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+                2 -> {
+                    StarRow(
+                        filledStars = 2,
+                        verticalAlignment = Alignment.Bottom,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+                3 -> {
+                    StarRow(
+                        filledStars = 3,
+                        verticalAlignment = Alignment.Bottom,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    WText(
+                        text = "You're mastered this one. Well done!",
+                        fontWeight = FontWeight.Normal,
+                        size = 14.sp,
+                        color = theme.CorrectTextColor
+                    )
+                }
             }
         }
         else {
-            Spacer(modifier = Modifier.height(72.dp))
-            Text(
-                text = mainWord.uppercase(),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = montserrat,
-                textAlign = TextAlign.Center,
-                textDecoration = TextDecoration.Underline,
-                letterSpacing = 4.sp,
-                color = theme.TextColor
-            )
-            println("PICKED WORD COUNT: $pickedWordCount; MISTAKE WORD COUNT: $mistakeWordCount")
-            WordsFromWord(mainWord = mainWord, necessaryWordCount = pickedWordCount, mistakeWordCount = mistakeWordCount)
+            NoInternetConnectionSign()
+        }
+
+    }
+}
+
+
+/**
+ * Words from a Word Screen ( used when navigating )
+ */
+@Composable
+fun WordsFromWordScreen() {
+    var isGameStarted: Boolean by remember {
+        mutableStateOf(false)
+    }
+
+    var level: Int by remember {
+        mutableStateOf(1)
+    }
+
+    var levelWord: String by remember {
+        mutableStateOf("")
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        WText(
+            text = "Words from Word",
+            size = 32.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp)
+        )
+        if (!isGameStarted) {
+            Column (
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Row (
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ChooseLevelIconButton(
+                        onClick = { level--; if (level == 0) level = 99 },
+                        resourcePath = "images/words_from_words/arrow.png",
+                        contentDescription = "level_arrow_left",
+                        angle = 180f
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    WText(
+                        text = words[level - 1],
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Normal,
+                        size = 16.sp,
+                        modifier = Modifier.width(240.dp).clickable { isGameStarted = true; levelWord = words[level - 1] }
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    ChooseLevelIconButton(
+                        onClick = { level++; if (level == 100) level = 1 },
+                        resourcePath = "images/words_from_words/arrow.png",
+                        contentDescription = "level_arrow_right",
+                        angle = 0f
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Divider(modifier = Modifier.height(1.dp).width(80.dp), color = theme.ButtonBorderColor)
+            }
+        }
+        else {
+            WordsFromWordGame(levelWord = levelWord)
         }
     }
 }

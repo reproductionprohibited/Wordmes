@@ -28,6 +28,8 @@ import theme
 
 /**
  * Function to calculate points to sort them. Used in the `Attempts` list
+ *      inputWord: the word the user inputs
+ *      answerWord: the word that is the answer
  */
 private fun points(
     inputWord: String,
@@ -43,6 +45,12 @@ private fun points(
 }
 
 
+/**
+ * Information Dialog, that pops up on top of the screen
+ *      titleText: title of the dialog
+ *      infoText: main text of the dialog
+ *      onClick: function that defines what happens when you click anywhere on the screen except for the dialog
+ */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun InformationAlertDialog(
@@ -76,6 +84,9 @@ private fun InformationAlertDialog(
 
 /**
  * Button to select word length
+ *      onClick: function that returns the length of the guessed word
+ *      length: button content text
+ *      isEnabled: true - if the
  */
 @Composable
 private fun SelectWordLengthButton(
@@ -110,6 +121,8 @@ private fun SelectWordLengthButton(
 
 /**
  * Row with buttons that select word length for Wordge game
+ *      onClickList: List with onClick functions for different buttons
+ *      isEnabled: Whether the game started ( false ) or the user hasn't chosen the game mode ( true )
  */
 @Composable
 private fun SelectWordLengthButtonRow(
@@ -137,6 +150,8 @@ private fun SelectWordLengthButtonRow(
 
 /**
  * LetterBox - a box of letter, indicating the correctness of position of specific letter given.
+ *      inputLetter: content tof the box
+ *      backgroundColor: the color
  */
 @Composable
 private fun LetterBox(
@@ -165,6 +180,8 @@ private fun LetterBox(
 /**
  * Guess Row - a row of letters, indicating how a specific letter in the input corresponds to the
  * correct letters in the answer word. Appears when length of input is equal to the length of the answer word
+ *      inputWord: user input
+ *      answerWord: guessed word
  */
 @Composable
 private fun GuessRow(
@@ -200,28 +217,34 @@ private fun GuessRow(
 
 
 /**
- * Game field for wordge. This is the area where the Player guess the word itself
+ * WordleGameField - the game field. All the gameplay is in this function
+ *      wordAnswer: guessed word
+ *      wordLength: length of the word chosen by the user
  */
 @Composable
-private fun GameField(
+private fun WordleGameField(
     modifier: Modifier = Modifier,
     wordAnswer: String,
     wordLength: Int
 ) {
-    var wordInput by remember {
+    var wordInput: String by remember {
         mutableStateOf("")
     }
 
-    var isInputEnabled by remember {
+    var isInputEnabled: Boolean by remember {
         mutableStateOf(true)
     }
 
-    var isAlertDialogOn by remember {
+    var isTextFieldFull: Boolean by remember {
         mutableStateOf(false)
     }
 
-    val guessAttempts: MutableMap<String, Int> by remember {
-        mutableStateOf(mutableMapOf())
+    val guessAttempts: MutableList<String> by remember {
+        mutableStateOf(mutableListOf())
+    }
+
+    var hasLost: Boolean by remember {
+        mutableStateOf(false)
     }
 
     Column(
@@ -232,6 +255,15 @@ private fun GameField(
             value = wordInput,
             onValueChange = { input ->
                 wordInput = input.filter { it.isLetter() }.take(wordLength).lowercase()
+                if ((wordInput.length == wordLength) && isTextFieldFull && (wordInput !in guessAttempts)) {
+                    isTextFieldFull = false
+                    guessAttempts.add(wordInput)
+                }
+                else { isTextFieldFull = true }
+                if (guessAttempts.size >= 6) {
+                    isInputEnabled = false
+                    hasLost = wordAnswer !in guessAttempts
+                }
             },
             enabled = isInputEnabled,
             colors = TextFieldDefaults.textFieldColors(
@@ -241,60 +273,39 @@ private fun GameField(
                 focusedLabelColor = theme.TextColor
             )
         )
-        Spacer(modifier = Modifier.height(48.dp))
-        if(wordInput.length == wordLength) {
-            guessAttempts[wordInput] = points(inputWord = wordInput, answerWord = wordAnswer)
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Divider(modifier = Modifier.width(72.dp).height(2.dp), color = theme.CardBorderColor)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        for(guess in guessAttempts) {
             GuessRow(
-                inputWord = wordInput,
+                inputWord = guess,
                 answerWord = wordAnswer
             )
-            if(wordInput == wordAnswer) {
-                isInputEnabled = false
-            }
+            Spacer(modifier = Modifier.height(12.dp))
         }
-        if(!isInputEnabled) {
+
+        if(wordInput == wordAnswer && isInputEnabled) {
+            isInputEnabled = false
+        }
+        if(!isInputEnabled && !hasLost) {
             Spacer(modifier = Modifier.height(48.dp))
             Text(
-                text = "You Win! The word is '$wordAnswer'",
+                text = "You win! The word is '$wordAnswer'",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal,
                 fontFamily = montserrat,
                 color = theme.CorrectTextColor
             )
-        }
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            OutlinedButton(
-                onClick = { isAlertDialogOn = true; println("Alert Dialog is: $isAlertDialogOn") },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = theme.ButtonBackgroundColor,
-                    contentColor = theme.ButtonContentColor
-                ),
-                border = BorderStroke(
-                    width=1.dp,
-                    color = theme.ButtonBorderColor
-                ),
-                enabled = isInputEnabled
-            ) {
-                Text(
-                    text = "Attempts",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    fontFamily = montserrat,
-                    color = theme.TextColor
-                )
-            }
-        }
-        if(isAlertDialogOn) {
-            InformationAlertDialog(
-                titleText = "Attempts [top-5]",
-                infoText = guessAttempts
-                    .toList()
-                    .sortedByDescending{ (_, points) -> points}.take(5).toMap()
-                    .keys.joinToString("\n"),
-                onClick = { isAlertDialogOn = false; println("Alert Dialog is: $isAlertDialogOn") }
+        } else if (hasLost) {
+            Spacer(modifier = Modifier.height(48.dp))
+            Text(
+                text = "You lost. Better luck next time ( the word was `$wordAnswer` )",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Normal,
+                fontFamily = montserrat,
+                color = theme.TextColor
             )
         }
     }
@@ -302,10 +313,10 @@ private fun GameField(
 
 
 /**
- * Screen with the game of 'Wordge'
+ * Wordle Screen. Screen that the user is navigated to by the NavHost
  */
 @Composable
-fun WordgeScreen(){
+fun WordleScreen(){
     var word: String? by remember {
         mutableStateOf("")
     }
@@ -365,14 +376,20 @@ fun WordgeScreen(){
     ) {
         WText(
             text = "Wordle",
-            size = 24.sp,
+            size = 32.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(top = 8.dp),
         )
         if(!hasStarted) {
-            StartButton(
-                onClick = { hasStarted = true },
-            )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                StartButton(
+                    onClick = { hasStarted = true },
+                    text = "start"
+                )
+            }
         }
         else {
             Spacer(modifier = Modifier.height(24.dp))
@@ -382,7 +399,7 @@ fun WordgeScreen(){
             )
             Spacer(modifier = Modifier.height(24.dp))
             if (!isEnabled && !hasNoInternetConnection) {
-                GameField(
+                WordleGameField(
                     wordAnswer = word!!,
                     wordLength = wordLength
                 )

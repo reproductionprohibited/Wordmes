@@ -17,6 +17,9 @@ import androidx.compose.ui.unit.sp
 import fonts.montserrat
 import theme
 
+/**
+ * NoInternetConnectionSign - Text that tells the user that an error occurred because of his poor internet connection
+ */
 @Composable
 fun NoInternetConnectionSign(
     modifier: Modifier = Modifier
@@ -29,7 +32,7 @@ fun NoInternetConnectionSign(
     ) {
         Text(
             text = """
-                There's a trouble with your Internet Connection.
+                An unforeseen error occurred due to your poor Internet Connection.
                 Check your Internet Connection and try again later.
             """.trimIndent(),
             fontSize = 18.sp,
