@@ -3,7 +3,7 @@ This is a desktop app, currently waiting for its Windows distributable non-stabl
 
 ![Title Screen](wordmes_git_readme/title_screen.png)
 
-This app consists of mini-word-games that you can play from any point on the globe, with just having access to the Internet ( there's only 1 game that can be played without internet )
+This app consists of mini-word-games that you can play from any point on the globe, with just having access to the Internet ( there're 2 games that can be played without internet )
 The list of games is:
   * ***Wordle***
   * ***Sharkman***
