@@ -1,22 +1,45 @@
 # Wordmes
-This is my IT semester project. To be precise, a set of mini-games, requiring Internet connection, that you can play ( obviously ).
-And if you don't know rules to any of the games, just chill. I got your back with a detailed description of gameplay process INSIDE the app
-## First Game - Wordle
-Yes, this is not an original idea, but i decided to extend it a little - I added different modes - 5 / 6 / 7 letter-words that you have to guess
-## Second Game - Sharkman
-This game is a modification of a famous game 'Hangman' where you have to name words and if the letters of the word you're saying appear in the word the master player has guessed, then all the appearances of this letter uncover in the guessed word.
-But in this mod, you have to type in letters. That's not as easy as it looks like, even though you've got 8 attempts to leave the shark hungry and fierced
-## Third Game - Words from Word
-A classical game. You just have to assemble words from the letters of the big word. But in this mod, there're 3 difficulty levels:
-#### 1. Easy
-Here you have to assemble 5 words and there's no punishment for entering a non-fitting word
-#### 2. Normal
-Here you have to assemble 7 words and punishment: -1 pts
-#### 3. Hard
-10 words to assemble and -2 for each non-fitting word
-However, there's no punishment for words that include letters, that don't appear in the main word, only the combinations of letters that don't make a word
+This is a desktop app, currently waiting for its Windows distributable non-stable release ( macOS and Linux to be added soon )
 
-**____________**
+![Title Screen](wordmes_git_readme/title_screen.png)
 
-***Have fun playing!***
+This app consists of mini-word-games that you can play from any point on the globe, with just having access to the Internet ( there's only 1 game that can be played without internet )
+The list of games is:
+  * ***Wordle***
+  * ***Sharkman***
+  * ***Words from a word***
+  * ***Bulls & Cows***
 
+## Wordle
+This is a game, where you have to guess a word in 6 tries. After each step you receive additional information that can help you
+
+![Wordle Screen](wordmes_git_readme/wordle_screen.png)
+
+## Sharkman
+This is a well-known game called Hangman with 8 tries and other pictures, the game process remains untouched: you make guessed that are one letter, and if that letter is present in the guessed word, all repeats of this letter become revealed in the word.
+
+### ***Sharkman Win*** ###
+![Sharkman Win Screen](wordmes_git_readme/sharkman_win_screen.png)
+
+*————————————————————*
+
+### ***Sharkman Loss*** ###
+![Sharkman Lose Screen](wordmes_git_readme/sharkman_lost_screen.png)
+
+## Words from word
+In this mini-game, you can choose 1 of 100 words and start assembling new words with the letters present in the starting word. There're 3 milestones:
+  * ***5 words - you receive 1st star***
+  * ***12 words - you receive 2nd star***
+  * ***25 words - you receive 3rd star***
+*P.S. You can continue assembling new words, 25 isn't the limit*
+
+![Words from word Screen](wordmes_git_readme/words_from_word_screen.png)
+
+## Bulls & Cows
+The only game that doesn't require internet connection. You pick one of 2 difficulty modes: Normal ( 4-digit number ) or Hard ( 6-digit number )
+The goal is to guess the number. After each step, you get new information: Bulls are digits that are in their positions, and cows are digits that are present in the guessed number, but they're not in their positions.
+
+![Words from word Screen](wordmes_git_readme/bulls_and_cows_screen.png)
+
+
+*P.S. The game is in its development stage, so stay tuned for bug fixes, new features & games.*
